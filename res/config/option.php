@@ -8,10 +8,18 @@ interface ThanhDieuConfigInterface {
 }
 
 class ThanhDieuConfigHelper {
-    public static $jsonPath = __DIR__ . '/config.json';
+    public static $jsonPath;
+    
+    public static function getJsonPath() {
+        if (!self::$jsonPath) {
+            self::$jsonPath = dirname(__FILE__) . '/config.json';
+        }
+        return self::$jsonPath;
+    }
     
     public static function loadConfig() {
-        if (!file_exists(self::$jsonPath)) {
+        $path = self::getJsonPath();
+        if (!file_exists($path)) {
             $default = [
                 "header" => [
                     "title" => "Admin Dashboard | ZethDevs",
@@ -99,13 +107,40 @@ class ThanhDieuConfigHelper {
                     ]
                 ]
             ];
-            file_put_contents(self::$jsonPath, json_encode($default, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            $json = json_encode($default, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            if (file_put_contents($path, $json) === false) {
+                header('HTTP/1.1 500 Internal Server Error');
+                echo "Error: Cannot write default config.json. Please make sure the 'res/config' folder has write permissions (chmod 777).";
+                exit;
+            }
         }
-        return json_decode(file_get_contents(self::$jsonPath), true);
+        $content = file_get_contents($path);
+        if ($content === false) {
+            header('HTTP/1.1 500 Internal Server Error');
+            echo "Error: Cannot read config.json. Please check read permissions.";
+            exit;
+        }
+        $data = json_decode($content, true);
+        if ($data === null) {
+            header('HTTP/1.1 500 Internal Server Error');
+            echo "Error: Corrupted or invalid config.json. Please delete 'res/config/config.json' to let it regenerate.";
+            exit;
+        }
+        return $data;
     }
 
     public static function saveConfig($data) {
-        file_put_contents(self::$jsonPath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $path = self::getJsonPath();
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        if (file_put_contents($path, $json) === false) {
+            header('HTTP/1.1 500 Internal Server Error');
+            header('Content-Type: application/json');
+            echo json_encode([
+                "status" => "error", 
+                "message" => "Permission Denied: Cannot write to '" . basename(dirname($path)) . "/" . basename($path) . "'. Please make sure the 'res/config' directory is writable (chmod 777)."
+            ]);
+            exit;
+        }
     }
 }
 

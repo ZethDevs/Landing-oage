@@ -1359,9 +1359,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         Wstoast.error(response.message);
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
                     Wstoast.closeAll();
-                    Wstoast.error('Failed to communicate with server.');
+                    var msg = 'Failed to communicate with server.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        msg += ' ' + xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        msg += ' Error: ' + xhr.responseText;
+                    } else if (error) {
+                        msg += ' (' + error + ')';
+                    }
+                    Wstoast.error(msg);
                 }
             });
         });
@@ -1387,9 +1395,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         Wstoast.error(response.message);
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
                     Wstoast.closeAll();
-                    Wstoast.error('Failed to update couple configurations.');
+                    var msg = 'Failed to update couple configurations.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        msg += ' ' + xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        msg += ' Error: ' + xhr.responseText;
+                    } else if (error) {
+                        msg += ' (' + error + ')';
+                    }
+                    Wstoast.error(msg);
                 }
             });
         });
@@ -1415,9 +1431,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         Wstoast.error(response.message);
                     }
                 },
-                error: function() {
+                error: function(xhr, status, error) {
                     Wstoast.closeAll();
-                    Wstoast.error('Failed to add track.');
+                    var msg = 'Failed to add track.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        msg += ' ' + xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        msg += ' Error: ' + xhr.responseText;
+                    } else if (error) {
+                        msg += ' (' + error + ')';
+                    }
+                    Wstoast.error(msg);
                 }
             });
         });
@@ -1447,9 +1471,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             Wstoast.error(response.message);
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
                         Wstoast.closeAll();
-                        Wstoast.error('Failed to delete track from backend storage.');
+                        var msg = 'Failed to delete track from backend storage.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg += ' ' + xhr.responseJSON.message;
+                        } else if (xhr.responseText) {
+                            msg += ' Error: ' + xhr.responseText;
+                        } else if (error) {
+                            msg += ' (' + error + ')';
+                        }
+                        Wstoast.error(msg);
                     }
                 });
             }
