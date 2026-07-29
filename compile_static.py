@@ -233,7 +233,7 @@ reset_button_html = """\n                    <div style="text-align: left; margi
 
 html_content = re.sub(developer_panel_end_pattern, r'\1' + reset_button_html, html_content)
 
-# Replace the original script block with our LocalStorage state manager
+# Replace the original script block with our Hybrid Server-Client Manager
 script_block_pattern = r'<script>\s+\$\(document\)\.ready\(function\(\) \{.*?\}\);\s+</script>'
 
 new_script_block = """<script>
@@ -439,116 +439,224 @@ new_script_block = """<script>
         setInterval(window.updateAnniversaryDisplay, 10000);
         window.updateAnniversaryDisplay();
 
-        // Save General Settings locally
+        // Save General Settings
         $('#form-general').on('submit', function(e) {
             e.preventDefault();
             Wstoast.loading('Saving general settings...');
             
-            if (!config) config = {};
-            if (!config.header) config.header = {};
-            if (!config.header.SocialNetworks) config.header.SocialNetworks = {};
-
-            config.header.title = $('input[name="title"]').val();
-            config.header.namesite = $('input[name="namesite"]').val();
-            config.header.favicon = $('input[name="favicon"]').val();
-            config.header.avatar = $('input[name="avatar"]').val();
-            config.header.description = $('input[name="description"]').val();
-            config.header.keywords = $('input[name="keywords"]').val();
-
-            config.header.bio1 = $('input[name="bio1"]').val();
-            config.header.bio2 = $('input[name="bio2"]').val();
-            config.header.bio3 = $('input[name="bio3"]').val();
-            config.header.bio4 = $('input[name="bio4"]').val();
-            config.header.bio5 = $('input[name="bio5"]').val();
-            config.header.bio6 = $('input[name="bio6"]').val();
-
-            var usernamesArray = $('textarea[name="usernames"]').val().split('\\n').map(s => s.trim()).filter(Boolean);
-            config.header.userName = usernamesArray;
-
-            config.header.SocialNetworks.facebook = $('input[name="social_facebook"]').val();
-            config.header.SocialNetworks.instagram = $('input[name="social_instagram"]').val();
-            config.header.SocialNetworks.tiktok = $('input[name="social_tiktok"]').val();
-            config.header.SocialNetworks.telegram = $('input[name="social_telegram"]').val();
-
-            localStorage.setItem('config_data', JSON.stringify(config));
+            var formData = $(this).serialize() + '&action=save_general';
             
-            Wstoast.closeAll();
-            Wstoast.success('General configurations successfully updated!');
-            setTimeout(function() {
-                location.reload();
-            }, 1000);
+            $.ajax({
+                url: 'index.php',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(response) {
+                    Wstoast.closeAll();
+                    if (response && response.status === 'success') {
+                        // PHP backend successfully saved to disk!
+                        // Remove localStorage override so we load directly from the updated config.json
+                        localStorage.removeItem('config_data');
+                        Wstoast.success(response.message || 'General configurations successfully updated on disk!');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        saveGeneralLocally();
+                    }
+                },
+                error: function() {
+                    // Fallback to localStorage if PHP is not available (e.g. GitHub Pages)
+                    saveGeneralLocally();
+                }
+            });
+
+            function saveGeneralLocally() {
+                if (!config) config = {};
+                if (!config.header) config.header = {};
+                if (!config.header.SocialNetworks) config.header.SocialNetworks = {};
+
+                config.header.title = $('input[name="title"]').val();
+                config.header.namesite = $('input[name="namesite"]').val();
+                config.header.favicon = $('input[name="favicon"]').val();
+                config.header.avatar = $('input[name="avatar"]').val();
+                config.header.description = $('input[name="description"]').val();
+                config.header.keywords = $('input[name="keywords"]').val();
+
+                config.header.bio1 = $('input[name="bio1"]').val();
+                config.header.bio2 = $('input[name="bio2"]').val();
+                config.header.bio3 = $('input[name="bio3"]').val();
+                config.header.bio4 = $('input[name="bio4"]').val();
+                config.header.bio5 = $('input[name="bio5"]').val();
+                config.header.bio6 = $('input[name="bio6"]').val();
+
+                var usernamesArray = $('textarea[name="usernames"]').val().split('\\n').map(s => s.trim()).filter(Boolean);
+                config.header.userName = usernamesArray;
+
+                config.header.SocialNetworks.facebook = $('input[name="social_facebook"]').val();
+                config.header.SocialNetworks.instagram = $('input[name="social_instagram"]').val();
+                config.header.SocialNetworks.tiktok = $('input[name="social_tiktok"]').val();
+                config.header.SocialNetworks.telegram = $('input[name="social_telegram"]').val();
+
+                localStorage.setItem('config_data', JSON.stringify(config));
+                
+                Wstoast.closeAll();
+                Wstoast.success('General configurations successfully updated (locally)!');
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            }
         });
 
-        // Save Relationship configurations locally
+        // Save Relationship configurations
         $('#form-relationship').on('submit', function(e) {
             e.preventDefault();
             Wstoast.loading('Saving anniversary configurations...');
             
-            if (!config) config = {};
-            if (!config.lovedays) config.lovedays = {};
-
-            config.lovedays.time_relashiption = $('input[name="time_relashiption"]').val();
-            config.lovedays.name_male = $('input[name="name_male"]').val();
-            config.lovedays.avatar_male = $('input[name="avatar_male"]').val();
-            config.lovedays.name_female = $('input[name="name_female"]').val();
-            config.lovedays.avatar_female = $('input[name="avatar_female"]').val();
-
-            localStorage.setItem('config_data', JSON.stringify(config));
+            var formData = $(this).serialize() + '&action=save_relationship';
             
-            Wstoast.closeAll();
-            Wstoast.success('Relationship configurations updated!');
-            setTimeout(function() {
-                location.reload();
-            }, 1000);
+            $.ajax({
+                url: 'index.php',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(response) {
+                    Wstoast.closeAll();
+                    if (response && response.status === 'success') {
+                        localStorage.removeItem('config_data');
+                        Wstoast.success(response.message || 'Relationship configurations updated on disk!');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        saveRelationshipLocally();
+                    }
+                },
+                error: function() {
+                    saveRelationshipLocally();
+                }
+            });
+
+            function saveRelationshipLocally() {
+                if (!config) config = {};
+                if (!config.lovedays) config.lovedays = {};
+
+                config.lovedays.time_relashiption = $('input[name="time_relashiption"]').val();
+                config.lovedays.name_male = $('input[name="name_male"]').val();
+                config.lovedays.avatar_male = $('input[name="avatar_male"]').val();
+                config.lovedays.name_female = $('input[name="name_female"]').val();
+                config.lovedays.avatar_female = $('input[name="avatar_female"]').val();
+
+                localStorage.setItem('config_data', JSON.stringify(config));
+                
+                Wstoast.closeAll();
+                Wstoast.success('Relationship configurations updated (locally)!');
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            }
         });
 
-        // Add Song locally
+        // Add Song
         $('#form-add-song').on('submit', function(e) {
             e.preventDefault();
             Wstoast.loading('Adding track to playlist...');
             
-            if (!config) config = {};
-            if (!config.music) config.music = [];
+            var formData = $(this).serialize() + '&action=add_song';
+            
+            $.ajax({
+                url: 'index.php',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(response) {
+                    Wstoast.closeAll();
+                    if (response && response.status === 'success') {
+                        localStorage.removeItem('config_data');
+                        Wstoast.success(response.message || 'New song added successfully to disk!');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        addSongLocally();
+                    }
+                },
+                error: function() {
+                    addSongLocally();
+                }
+            });
 
-            var newSong = {
-                title: $('input[name="song_title"]').val() || "Unknown",
-                author: $('input[name="song_author"]').val() || "Unknown Artist",
-                url: $('input[name="song_url"]').val() || "",
-                avatar: $('input[name="song_avatar"]').val() || "https://i.imgur.com/e28b0dD.png"
-            };
+            function addSongLocally() {
+                if (!config) config = {};
+                if (!config.music) config.music = [];
 
-            if (newSong.url) {
-                config.music.push(newSong);
-                localStorage.setItem('config_data', JSON.stringify(config));
-                Wstoast.closeAll();
-                Wstoast.success('New song added successfully!');
-                setTimeout(function() {
-                    location.reload();
-                }, 1000);
-            } else {
-                Wstoast.closeAll();
-                Wstoast.error('Song MP3 URL cannot be empty!');
+                var newSong = {
+                    title: $('input[name="song_title"]').val() || "Unknown",
+                    author: $('input[name="song_author"]').val() || "Unknown Artist",
+                    url: $('input[name="song_url"]').val() || "",
+                    avatar: $('input[name="song_avatar"]').val() || "https://i.imgur.com/e28b0dD.png"
+                };
+
+                if (newSong.url) {
+                    config.music.push(newSong);
+                    localStorage.setItem('config_data', JSON.stringify(config));
+                    Wstoast.closeAll();
+                    Wstoast.success('New song added successfully (locally)!');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    Wstoast.closeAll();
+                    Wstoast.error('Song MP3 URL cannot be empty!');
+                }
             }
         });
 
-        // Delete Song locally
+        // Delete Song
         $(document).on('click', '.delete-song-btn', function() {
             var index = parseInt($(this).attr('data-index') || $(this).data('index'), 10);
             var row = $(this).closest('tr');
             if (confirm('Are you sure you want to permanently delete this track?')) {
                 Wstoast.loading('Deleting track...');
                 
-                if (config && config.music && index >= 0 && index < config.music.length) {
-                    config.music.splice(index, 1);
-                    localStorage.setItem('config_data', JSON.stringify(config));
-                    Wstoast.closeAll();
-                    Wstoast.success('Song deleted successfully!');
-                    row.fadeOut(500, function() {
-                        location.reload();
-                    });
-                } else {
-                    Wstoast.closeAll();
-                    Wstoast.error('Invalid song index!');
+                $.ajax({
+                    url: 'index.php',
+                    type: 'POST',
+                    data: {
+                        action: 'delete_song',
+                        index: index
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        Wstoast.closeAll();
+                        if (response && response.status === 'success') {
+                            localStorage.removeItem('config_data');
+                            Wstoast.success(response.message || 'Song deleted successfully from disk!');
+                            row.fadeOut(500, function() {
+                                location.reload();
+                            });
+                        } else {
+                            deleteSongLocally();
+                        }
+                    },
+                    error: function() {
+                        deleteSongLocally();
+                    }
+                });
+
+                function deleteSongLocally() {
+                    if (config && config.music && index >= 0 && index < config.music.length) {
+                        config.music.splice(index, 1);
+                        localStorage.setItem('config_data', JSON.stringify(config));
+                        Wstoast.closeAll();
+                        Wstoast.success('Song deleted successfully (locally)!');
+                        row.fadeOut(500, function() {
+                            location.reload();
+                        });
+                    } else {
+                        Wstoast.closeAll();
+                        Wstoast.error('Invalid song index!');
+                    }
                 }
             }
         });
