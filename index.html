@@ -1,96 +1,3 @@
-<?php require_once './res/config/option.php'; ?>
-<?php 
-$ThanhDieuHeader = new ThanhDieuHeader();
-$ThanhDieuLoveDays = new ThanhDieuLoveDays();
-$ThanhDieuMusicList = new ThanhDieuMusicList();
-$ThanhDieuHeader->CommonMethod();
-$ThanhDieuLoveDays->CommonMethod();
-$ThanhDieuMusicList->CommonMethod();
-
-// Handle Form Submissions (AJAX actions)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    header('Content-Type: application/json');
-    $configData = $GLOBALS['TD_CONFIG_DATA'];
-
-    if ($_POST['action'] === 'save_general') {
-        $configData['header']['title'] = $_POST['title'] ?? $configData['header']['title'];
-        $configData['header']['namesite'] = $_POST['namesite'] ?? $configData['header']['namesite'];
-        $configData['header']['description'] = $_POST['description'] ?? $configData['header']['description'];
-        $configData['header']['keywords'] = $_POST['keywords'] ?? $configData['header']['keywords'];
-        $configData['header']['favicon'] = $_POST['favicon'] ?? $configData['header']['favicon'];
-        $configData['header']['avatar'] = $_POST['avatar'] ?? $configData['header']['avatar'];
-        $configData['header']['bio1'] = $_POST['bio1'] ?? $configData['header']['bio1'];
-        $configData['header']['bio2'] = $_POST['bio2'] ?? $configData['header']['bio2'];
-        $configData['header']['bio3'] = $_POST['bio3'] ?? $configData['header']['bio3'];
-        $configData['header']['bio4'] = $_POST['bio4'] ?? $configData['header']['bio4'];
-        $configData['header']['bio5'] = $_POST['bio5'] ?? $configData['header']['bio5'];
-        $configData['header']['bio6'] = $_POST['bio6'] ?? $configData['header']['bio6'];
-        
-        if (isset($_POST['usernames']) && !empty($_POST['usernames'])) {
-            $usernamesArray = array_map('trim', explode("\n", $_POST['usernames']));
-            $configData['header']['userName'] = array_values(array_filter($usernamesArray));
-        }
-
-        if (isset($_POST['social_facebook'])) {
-            $configData['header']['SocialNetworks']['facebook'] = $_POST['social_facebook'];
-        }
-        if (isset($_POST['social_instagram'])) {
-            $configData['header']['SocialNetworks']['instagram'] = $_POST['social_instagram'];
-        }
-        if (isset($_POST['social_tiktok'])) {
-            $configData['header']['SocialNetworks']['tiktok'] = $_POST['social_tiktok'];
-        }
-        if (isset($_POST['social_telegram'])) {
-            $configData['header']['SocialNetworks']['telegram'] = $_POST['social_telegram'];
-        }
-
-        ThanhDieuConfigHelper::saveConfig($configData);
-        echo json_encode(["status" => "success", "message" => "General configurations successfully updated!"]);
-        exit;
-    }
-
-    if ($_POST['action'] === 'save_relationship') {
-        $configData['lovedays']['name_male'] = $_POST['name_male'] ?? $configData['lovedays']['name_male'];
-        $configData['lovedays']['avatar_male'] = $_POST['avatar_male'] ?? $configData['lovedays']['avatar_male'];
-        $configData['lovedays']['name_female'] = $_POST['name_female'] ?? $configData['lovedays']['name_female'];
-        $configData['lovedays']['avatar_female'] = $_POST['avatar_female'] ?? $configData['lovedays']['avatar_female'];
-        $configData['lovedays']['time_relashiption'] = $_POST['time_relashiption'] ?? $configData['lovedays']['time_relashiption'];
-
-        ThanhDieuConfigHelper::saveConfig($configData);
-        echo json_encode(["status" => "success", "message" => "Relationship configurations updated!"]);
-        exit;
-    }
-
-    if ($_POST['action'] === 'add_song') {
-        $newSong = [
-            "title" => $_POST['song_title'] ?? "Unknown",
-            "author" => $_POST['song_author'] ?? "Unknown Artist",
-            "url" => $_POST['song_url'] ?? "",
-            "avatar" => $_POST['song_avatar'] ?? "https://i.imgur.com/e28b0dD.png"
-        ];
-        if (!empty($newSong['url'])) {
-            $configData['music'][] = $newSong;
-            ThanhDieuConfigHelper::saveConfig($configData);
-            echo json_encode(["status" => "success", "message" => "New song added successfully!"]);
-        } else {
-            echo json_encode(["status" => "error", "message" => "Song MP3 URL cannot be empty!"]);
-        }
-        exit;
-    }
-
-    if ($_POST['action'] === 'delete_song') {
-        $index = intval($_POST['index']);
-        if (isset($configData['music'][$index])) {
-            array_splice($configData['music'], $index, 1);
-            ThanhDieuConfigHelper::saveConfig($configData);
-            echo json_encode(["status" => "success", "message" => "Song deleted successfully!"]);
-        } else {
-            echo json_encode(["status" => "error", "message" => "Invalid song index!"]);
-        }
-        exit;
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="en" class="theme-custom">
 <head>
@@ -99,20 +6,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="theme-color" content="#00FFFF">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <meta name="description" content="<?=$ThanhDieuHeader->description?>">
+    <meta name="description" content="Hi my name is ThanhDieu / A freelance / web developer / vexer">
     <meta name="author" content="ThanhDieuTV">
-    <meta name="keywords" content="<?=$ThanhDieuHeader->keywords?>">
+    <meta name="keywords" content="thanhdieu,web thanhdieu,vuong thanhdieu,thanhdieutv,wsteam,wusteam,thanhdieu home,profile thanhdieu">
     <meta name="robots" content="index, follow">
     <meta property="og:type" content="website">
-    <link rel="shortcut icon" href="<?=$ThanhDieuHeader->favicon?>?v=<?=rand(1,999)?>" type="image/x-icon">
-    <meta property="og:title" content="<?=$ThanhDieuHeader->title?>">
+    <link rel="shortcut icon" href="./res/v5/img/logo.jpg?v=745" type="image/x-icon">
+    <meta property="og:title" content="Admin Dashboard | ZethDevs">
     <meta property="og:url" content="//thanhdieu.com">
     <meta property="og:image" content="./res/v5/img/bg3.webp">
-    <title><?=$ThanhDieuHeader->title?></title>
+    <title>Admin Dashboard | ZethDevs</title>
     <!--/ @StyleSheets /-->
     <link rel="stylesheet" href="./res/v5/css/ws.theme.css">
     <link rel="stylesheet" href="./res/v5/css/animation.css">
-    <link rel="stylesheet" href="./res/v5/css/index.css?v=<?php echo rand(1,999)?>">
+    <link rel="stylesheet" href="./res/v5/css/index.css?v=538">
     <link rel="stylesheet" href="./res/v5/css/style.css">
     <link rel="stylesheet" href="./res/v5/css/custom-love.css">
     <!--/ @Frameworks /-->
@@ -619,7 +526,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     </div>
     <div id="loading-box">
         <div class="loading-bg">
-            <img class="loading-img entered loading" src="<?=$ThanhDieuHeader->favicon?>?v=<?=rand(1,999)?>" data-ws-status="loading">
+            <img class="loading-img entered loading" src="./res/v5/img/logo.jpg?v=403" data-ws-status="loading">
             <div class="loading-image-dot"></div>
             <div id="loading-percentage">0%</div>
         </div>
@@ -643,12 +550,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             <div class="sidebar-profile">
                 <div class="about-me">
                     <div class="avatar">
-                        <img class="avatar-img" src="<?=$ThanhDieuHeader->avatar?>?v=<?=rand(1,999)?>" alt="Vương Thanh Diệu">
+                        <img class="avatar-img" src="./res/v5/img/avatar.gif?v=139" alt="Vương Thanh Diệu">
                         <img class="crown" src="./res/v5/img/crown/mong-vuot-rong.png">
                     </div>
                 </div>
                 <div style="margin-top: 15px;">
-                    <h4 style="font-size: 1.1rem; margin: 0; font-weight: 700; color: var(--text-color);"><?=$ThanhDieuHeader->namesite?></h4>
+                    <h4 style="font-size: 1.1rem; margin: 0; font-weight: 700; color: var(--text-color);">ADMIN | CONTROL PANEL</h4>
                     <span style="font-size: 0.78rem; opacity: 0.6; color: var(--text-color);">System Administrator</span>
                     <div style="margin-top: 8px;">
                         <span class="badge badge-success" style="background: #28a745; color: white; border-radius: 20px; padding: 3px 12px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 4px;">
@@ -717,7 +624,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: 20px;">
                         <div>
                             <h2 class="HoVaTen__" style="text-align: left; font-size: 1.85rem; margin: 0; margin-bottom: 8px; text-shadow: none;">
-                                <span id="userName" data-userName='<?= json_encode($ThanhDieuHeader->userName ?? []) ?>'></span>
+                                <span id="userName" data-userName='["Hello Admin", "Welcome to Admin Panel.", "Control and configure your site 🚀"]'></span>
                             </h2>
                             <p style="margin: 0; font-size: 0.95rem; opacity: 0.75; color: var(--text-color);">
                                 Welcome back to your master control dashboard. Here you can configure system parameters, update metadata, monitor performance, and customize live modules.
@@ -749,7 +656,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     <div class="dash-stat-card">
                         <div class="dash-stat-info">
                             <span class="dash-stat-label">Active Songs</span>
-                            <span class="dash-stat-value"><?= count($ThanhDieuMusicList->songs) ?> Tracks</span>
+                            <span class="dash-stat-value">9 Tracks</span>
                         </div>
                         <div class="dash-stat-icon icon-emerald">
                             <i class="ri-music-fill"></i>
@@ -778,18 +685,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         <!--/ Majestic floating tags and avatar core precisely as requested /-->
                         <div class="about-me" style="display: flex; align-items: center; gap: 30px; margin: 0 auto; flex-wrap: wrap; justify-content: center;">
                             <div class="info-left">
-                                <span class="tag"><?=$ThanhDieuHeader->bio1?></span>
-                                <span class="tag"><?=$ThanhDieuHeader->bio2?></span>
-                                <span class="tag"><?=$ThanhDieuHeader->bio3?></span>
+                                <span class="tag">🤖️ Administrator</span>
+                                <span class="tag">🔍 High Security Mode</span>
+                                <span class="tag">💻 Control Panel active</span>
                             </div>
                             <div class="avatar" style="position: relative;">
-                                <img class="avatar-img" src="<?=$ThanhDieuHeader->avatar?>?v=<?=rand(1,999)?>" alt="Vương Thanh Diệu">
+                                <img class="avatar-img" src="./res/v5/img/avatar.gif?v=85" alt="Vương Thanh Diệu">
                                 <img class="crown" src="./res/v5/img/crown/mong-vuot-rong.png">
                             </div>
                             <div class="info-right">
-                                <span class="tag"><?=$ThanhDieuHeader->bio4?></span>
-                                <span class="tag"><?=$ThanhDieuHeader->bio5?></span>
-                                <span class="tag"><?=$ThanhDieuHeader->bio6?></span>
+                                <span class="tag">Monitoring traffic live 📊</span>
+                                <span class="tag">Custom CSS & Animations 🎨</span>
+                                <span class="tag">Optimized performance 🚀</span>
                             </div>
                         </div>
 
@@ -806,7 +713,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         </h3>
                         <div style="padding: 10px 0;">
                             <!-- Original hidden date binder -->
-                            <div class="hide" id="anniversary-date-binder" data-ngayyeu="<?= $ThanhDieuLoveDays->ConfigLove['time_relashiption']; ?>"></div>
+                            <div class="hide" id="anniversary-date-binder" data-ngayyeu="28/03/2024"></div>
                             
                             <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 25px;">
                                 <div style="text-align: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); padding: 12px 18px; border-radius: 12px; min-width: 70px;">
@@ -832,15 +739,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                 <div class="bg-img" style="border: none; box-shadow: none; background: none;">
                                     <div class="middle animated" style="display: flex; justify-content: center; align-items: center; gap: 20px; position: static;">
                                         <div class="img-male" style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                                            <img src="<?=$ThanhDieuLoveDays->ConfigLove['avatar_male'];?>" alt="<?=$ThanhDieuLoveDays->ConfigLove['name_male'];?>" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--border-color);">
+                                            <img src="./res/v5/img/male.jpeg" alt="ThanhDieu" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--border-color);">
                                             <img class="crown-love" src="./res/v5/img/crown/khung-4.png" style="width: 90px; height: auto; position: absolute; top: -10px;">
-                                            <span style="font-size: 0.85rem; font-weight: 700; margin-top: 8px; color: var(--text-color);"><?=$ThanhDieuLoveDays->ConfigLove['name_male'];?></span>
+                                            <span style="font-size: 0.85rem; font-weight: 700; margin-top: 8px; color: var(--text-color);">ThanhDieu</span>
                                         </div>
                                         <div class="heart" style="background-size: contain; width: 35px; height: 35px; margin: 0;"></div>
                                         <div class="img-female" style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                                            <img src="<?=$ThanhDieuLoveDays->ConfigLove['avatar_female'];?>" alt="<?=$ThanhDieuLoveDays->ConfigLove['name_female'];?>" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--border-color);">
+                                            <img src="./res/v5/img/female.jpeg" alt="Ngoc Tram" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--border-color);">
                                             <img class="crown-love" src="./res/v5/img/crown/khung-4.png" style="width: 90px; height: auto; position: absolute; top: -10px;">
-                                            <span style="font-size: 0.85rem; font-weight: 700; margin-top: 8px; color: var(--text-color);"><?=$ThanhDieuLoveDays->ConfigLove['name_female'];?></span>
+                                            <span style="font-size: 0.85rem; font-weight: 700; margin-top: 8px; color: var(--text-color);">Ngoc Tram</span>
                                         </div>
                                     </div>
                                 </div>
@@ -899,27 +806,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         <div class="dash-form-grid">
                             <div class="dash-form-group">
                                 <label class="dash-label">Website Title</label>
-                                <input type="text" class="dash-input" name="title" value="<?= htmlspecialchars($ThanhDieuHeader->title) ?>" required>
+                                <input type="text" class="dash-input" name="title" value="Admin Dashboard | ZethDevs" required>
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Website Brand / Name Site</label>
-                                <input type="text" class="dash-input" name="namesite" value="<?= htmlspecialchars($ThanhDieuHeader->namesite) ?>" required>
+                                <input type="text" class="dash-input" name="namesite" value="ADMIN | CONTROL PANEL" required>
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Favicon Link</label>
-                                <input type="text" class="dash-input" name="favicon" value="<?= htmlspecialchars($ThanhDieuHeader->favicon) ?>" required>
+                                <input type="text" class="dash-input" name="favicon" value="./res/v5/img/logo.jpg" required>
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Admin Avatar (GIF or PNG)</label>
-                                <input type="text" class="dash-input" name="avatar" value="<?= htmlspecialchars($ThanhDieuHeader->avatar) ?>" required>
+                                <input type="text" class="dash-input" name="avatar" value="./res/v5/img/avatar.gif" required>
                             </div>
                             <div class="dash-form-group full-width">
                                 <label class="dash-label">Website Description (SEO)</label>
-                                <input type="text" class="dash-input" name="description" value="<?= htmlspecialchars($ThanhDieuHeader->description) ?>">
+                                <input type="text" class="dash-input" name="description" value="Hi my name is ThanhDieu / A freelance / web developer / vexer">
                             </div>
                             <div class="dash-form-group full-width">
                                 <label class="dash-label">Keywords (Comma-separated)</label>
-                                <input type="text" class="dash-input" name="keywords" value="<?= htmlspecialchars($ThanhDieuHeader->keywords) ?>">
+                                <input type="text" class="dash-input" name="keywords" value="thanhdieu,web thanhdieu,vuong thanhdieu,thanhdieutv,wsteam,wusteam,thanhdieu home,profile thanhdieu">
                             </div>
                         </div>
                     </div>
@@ -931,31 +838,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         <div class="dash-form-grid">
                             <div class="dash-form-group">
                                 <label class="dash-label">Bio Tag 1</label>
-                                <input type="text" class="dash-input" name="bio1" value="<?= htmlspecialchars($ThanhDieuHeader->bio1) ?>">
+                                <input type="text" class="dash-input" name="bio1" value="🤖️ Administrator">
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Bio Tag 2</label>
-                                <input type="text" class="dash-input" name="bio2" value="<?= htmlspecialchars($ThanhDieuHeader->bio2) ?>">
+                                <input type="text" class="dash-input" name="bio2" value="🔍 High Security Mode">
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Bio Tag 3</label>
-                                <input type="text" class="dash-input" name="bio3" value="<?= htmlspecialchars($ThanhDieuHeader->bio3) ?>">
+                                <input type="text" class="dash-input" name="bio3" value="💻 Control Panel active">
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Bio Tag 4</label>
-                                <input type="text" class="dash-input" name="bio4" value="<?= htmlspecialchars($ThanhDieuHeader->bio4) ?>">
+                                <input type="text" class="dash-input" name="bio4" value="Monitoring traffic live 📊">
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Bio Tag 5</label>
-                                <input type="text" class="dash-input" name="bio5" value="<?= htmlspecialchars($ThanhDieuHeader->bio5) ?>">
+                                <input type="text" class="dash-input" name="bio5" value="Custom CSS & Animations 🎨">
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Bio Tag 6</label>
-                                <input type="text" class="dash-input" name="bio6" value="<?= htmlspecialchars($ThanhDieuHeader->bio6) ?>">
+                                <input type="text" class="dash-input" name="bio6" value="Optimized performance 🚀">
                             </div>
                             <div class="dash-form-group full-width">
                                 <label class="dash-label">Typed Subtitle Greetings (One string per line)</label>
-                                <textarea class="dash-textarea" name="usernames" rows="4"><?= implode("\n", $ThanhDieuHeader->userName ?? []) ?></textarea>
+                                <textarea class="dash-textarea" name="usernames" rows="4">Hello Admin
+Welcome to Admin Panel.
+Control and configure your site 🚀</textarea>
                             </div>
                         </div>
                     </div>
@@ -967,19 +876,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         <div class="dash-form-grid">
                             <div class="dash-form-group">
                                 <label class="dash-label">Facebook Profile URL</label>
-                                <input type="text" class="dash-input" name="social_facebook" value="<?= htmlspecialchars($ThanhDieuHeader->SocialNetworks['facebook'] ?? '') ?>">
+                                <input type="text" class="dash-input" name="social_facebook" value="https://facebook.com/wusthanhdieu">
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Instagram Profile URL</label>
-                                <input type="text" class="dash-input" name="social_instagram" value="<?= htmlspecialchars($ThanhDieuHeader->SocialNetworks['instagram'] ?? '') ?>">
+                                <input type="text" class="dash-input" name="social_instagram" value="https://www.instagram.com/vuongsondieu2k2">
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">TikTok Profile URL</label>
-                                <input type="text" class="dash-input" name="social_tiktok" value="<?= htmlspecialchars($ThanhDieuHeader->SocialNetworks['tiktok'] ?? '') ?>">
+                                <input type="text" class="dash-input" name="social_tiktok" value="https://www.tiktok.com/">
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Telegram Group/Channel URL</label>
-                                <input type="text" class="dash-input" name="social_telegram" value="<?= htmlspecialchars($ThanhDieuHeader->SocialNetworks['telegram'] ?? '') ?>">
+                                <input type="text" class="dash-input" name="social_telegram" value="https://t.me/thanhdieuchannel">
                             </div>
                         </div>
                         <div style="margin-top: 30px; text-align: right;">
@@ -1002,28 +911,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             <!-- Anniversary Date Picker -->
                             <div class="dash-form-group full-width">
                                 <label class="dash-label">Anniversary Start Date (Format: DD/MM/YYYY)</label>
-                                <input type="text" class="dash-input" name="time_relashiption" placeholder="e.g. 28/03/2024" value="<?= htmlspecialchars($ThanhDieuLoveDays->ConfigLove['time_relashiption'] ?? '') ?>" required>
+                                <input type="text" class="dash-input" name="time_relashiption" placeholder="e.g. 28/03/2024" value="28/03/2024" required>
                                 <span style="font-size:0.8rem; opacity: 0.6; color: var(--text-color);">The date format must be exactly DD/MM/YYYY or DD-MM-YYYY to allow countdown algorithms to function.</span>
                             </div>
 
                             <!-- Male configuration -->
                             <div class="dash-form-group">
                                 <label class="dash-label">Partner A: Name (Male)</label>
-                                <input type="text" class="dash-input" name="name_male" value="<?= htmlspecialchars($ThanhDieuLoveDays->ConfigLove['name_male'] ?? '') ?>" required>
+                                <input type="text" class="dash-input" name="name_male" value="ThanhDieu" required>
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Partner A: Avatar Image (Male)</label>
-                                <input type="text" class="dash-input" name="avatar_male" value="<?= htmlspecialchars($ThanhDieuLoveDays->ConfigLove['avatar_male'] ?? '') ?>" required>
+                                <input type="text" class="dash-input" name="avatar_male" value="./res/v5/img/male.jpeg" required>
                             </div>
 
                             <!-- Female configuration -->
                             <div class="dash-form-group">
                                 <label class="dash-label">Partner B: Name (Female)</label>
-                                <input type="text" class="dash-input" name="name_female" value="<?= htmlspecialchars($ThanhDieuLoveDays->ConfigLove['name_female'] ?? '') ?>" required>
+                                <input type="text" class="dash-input" name="name_female" value="Ngoc Tram" required>
                             </div>
                             <div class="dash-form-group">
                                 <label class="dash-label">Partner B: Avatar Image (Female)</label>
-                                <input type="text" class="dash-input" name="avatar_female" value="<?= htmlspecialchars($ThanhDieuLoveDays->ConfigLove['avatar_female'] ?? '') ?>" required>
+                                <input type="text" class="dash-input" name="avatar_female" value="./res/v5/img/female.jpeg" required>
                             </div>
                         </div>
                         <div style="margin-top: 30px; text-align: right;">
@@ -1073,7 +982,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 <!--/ Song List Table /-->
                 <div class="dash-card">
                     <h3 class="dash-card-title">
-                        <i class="ri-music-2-line"></i> Loaded Audio Tracks (<?= count($ThanhDieuMusicList->songs) ?> total)
+                        <i class="ri-music-2-line"></i> Loaded Audio Tracks (9 total)
                     </h3>
                     <div class="dash-table-wrapper">
                         <table class="dash-table">
@@ -1088,26 +997,169 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($ThanhDieuMusicList->songs as $index => $song): ?>
-                                <tr>
-                                    <td><?= $index + 1 ?></td>
+                                                                <tr>
+                                    <td>1</td>
                                     <td>
-                                        <img src="<?= htmlspecialchars($song['avatar']) ?>" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                        <img src="https://i.ibb.co/Pt4ZJJd/that-girl-1545280005.jpg" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
                                     </td>
-                                    <td style="font-weight: 700;"><?= htmlspecialchars($song['title']) ?></td>
-                                    <td><?= htmlspecialchars($song['author']) ?></td>
+                                    <td style="font-weight: 700;">That Girl</td>
+                                    <td>Olly Murs</td>
                                     <td>
-                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;"><?= htmlspecialchars($song['url']) ?></span>
+                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">https://files.catbox.moe/4bjjfg.mp3</span>
                                     </td>
                                     <td style="text-align: right;">
                                         <div style="display:inline-flex; gap: 8px;">
-                                            <button class="dash-btn-danger delete-song-btn" data-index="<?= $index ?>">
+                                            <button class="dash-btn-danger delete-song-btn" data-index="0">
                                                 <i class="ri-delete-bin-fill"></i> Delete
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                                <?php endforeach; ?>
+                                <tr>
+                                    <td>2</td>
+                                    <td>
+                                        <img src="https://i.imgur.com/e28b0dD.png" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                    </td>
+                                    <td style="font-weight: 700;">Thiên Lý Ơi</td>
+                                    <td>Jack ( 5 Triệu )</td>
+                                    <td>
+                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">https://files.catbox.moe/m8b4hr.mp3</span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display:inline-flex; gap: 8px;">
+                                            <button class="dash-btn-danger delete-song-btn" data-index="1">
+                                                <i class="ri-delete-bin-fill"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>
+                                        <img src="https://i.imgur.com/DAaTklq.png" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                    </td>
+                                    <td style="font-weight: 700;">Thuỷ Triều</td>
+                                    <td>Quang Hùng MasterD</td>
+                                    <td>
+                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">https://files.catbox.moe/yrpft2.mp3</span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display:inline-flex; gap: 8px;">
+                                            <button class="dash-btn-danger delete-song-btn" data-index="2">
+                                                <i class="ri-delete-bin-fill"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>
+                                        <img src="https://i.imgur.com/vp5Vsx5.png" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                    </td>
+                                    <td style="font-weight: 700;">風立ちぬ ( Gió Nổi )</td>
+                                    <td>周深</td>
+                                    <td>
+                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">https://files.catbox.moe/jlat9a.mp3</span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display:inline-flex; gap: 8px;">
+                                            <button class="dash-btn-danger delete-song-btn" data-index="3">
+                                                <i class="ri-delete-bin-fill"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>
+                                        <img src="https://i.imgur.com/GEOKT8b.png" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                    </td>
+                                    <td style="font-weight: 700;">Chúng Ta Của Tương Lai</td>
+                                    <td>Sơn Tùng M-TP</td>
+                                    <td>
+                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">https://files.catbox.moe/hkqk6x.mp3</span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display:inline-flex; gap: 8px;">
+                                            <button class="dash-btn-danger delete-song-btn" data-index="4">
+                                                <i class="ri-delete-bin-fill"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td>
+                                        <img src="https://i.ibb.co/MDVY07s/619964de31327dbf8491d14d2c25533f.jpg" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                    </td>
+                                    <td style="font-weight: 700;">Hoa Cỏ Lau</td>
+                                    <td>Phong Max</td>
+                                    <td>
+                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">https://files.catbox.moe/acg0vl.mp3</span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display:inline-flex; gap: 8px;">
+                                            <button class="dash-btn-danger delete-song-btn" data-index="5">
+                                                <i class="ri-delete-bin-fill"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td>
+                                        <img src="https://i.ibb.co/6R8V7S7/ed0741228ad36870e13624120474e50a.jpg" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                    </td>
+                                    <td style="font-weight: 700;">Sau Lời Từ Khước</td>
+                                    <td>Phan Mạnh Quỳnh</td>
+                                    <td>
+                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">https://files.catbox.moe/s8opab.mp3</span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display:inline-flex; gap: 8px;">
+                                            <button class="dash-btn-danger delete-song-btn" data-index="6">
+                                                <i class="ri-delete-bin-fill"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>8</td>
+                                    <td>
+                                        <img src="https://i.ibb.co/gvXHBqv/ab67616d0000b273ae85dfd27beee97a3a009f68.jpg" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                    </td>
+                                    <td style="font-weight: 700;">Em Đã Xa Anh Remix</td>
+                                    <td>Như Việt</td>
+                                    <td>
+                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">https://files.catbox.moe/gvqgma.mp3</span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display:inline-flex; gap: 8px;">
+                                            <button class="dash-btn-danger delete-song-btn" data-index="7">
+                                                <i class="ri-delete-bin-fill"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>9</td>
+                                    <td>
+                                        <img src="https://i.ibb.co/VpFyXhS/ab44498b5b432879428719390baf1180-1490064587.jpg" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                    </td>
+                                    <td style="font-weight: 700;">Anh Đã Quen Với Cô Đơn</td>
+                                    <td>Soobin Hoàng Sơn</td>
+                                    <td>
+                                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">https://files.catbox.moe/dvjckq.mp3</span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display:inline-flex; gap: 8px;">
+                                            <button class="dash-btn-danger delete-song-btn" data-index="8">
+                                                <i class="ri-delete-bin-fill"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
                             </tbody>
                         </table>
                     </div>
@@ -1150,6 +1202,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             </div>
                         </div>
                     </div>
+                    <div style="text-align: left; margin-top: 20px;">
+                        <button class="dash-btn-primary" id="btn-reset-config" style="background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 8px 25px rgba(225, 29, 72, 0.4);">
+                            <i class="ri-refresh-line"></i> Reset to Repository Default Config
+                        </button>
+                    </div>
+
                     
                     <div style="height: 30px;"></div>
 
@@ -1158,15 +1216,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             <h4 class="dash-label">Server Environment Details</h4>
                             <p style="opacity: 0.7; font-size: 0.9rem; color: var(--text-color);">
                                 <strong>Operating Timezone:</strong> Asia/Ho_Chi_Minh <br>
-                                <strong>Server Time:</strong> <?= date('Y-m-d H:i:s') ?> <br>
-                                <strong>Client Host IP:</strong> <?= $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1' ?> <br>
-                                <strong>HTTP Host:</strong> <?= $_SERVER['HTTP_HOST'] ?? 'localhost' ?> <br>
-                                <strong>Protocol:</strong> <?= $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1' ?>
+                                <strong>Server Time:</strong> 2026-07-29 14:15:00 <br>
+                                <strong>Client Host IP:</strong> 127.0.0.1 <br>
+                                <strong>HTTP Host:</strong> localhost <br>
+                                <strong>Protocol:</strong> HTTP/1.1
                             </p>
                         </div>
                         <div>
                             <h4 class="dash-label">Active Variables Cache</h4>
-                            <textarea class="dash-textarea" style="font-family: monospace; font-size: 0.8rem;" rows="6" readonly><?= json_encode($GLOBALS['TD_CONFIG_DATA'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) ?></textarea>
+                            <textarea class="dash-textarea" style="font-family: monospace; font-size: 0.8rem;" rows="6" readonly>{
+    "header": {
+        "title": "Admin Dashboard | ZethDevs",
+        "description": "Hi my name is ThanhDieu / A freelance / web developer / vexer",
+        "keywords": "thanhdieu,web thanhdieu,vuong thanhdieu,thanhdieutv,wsteam,wusteam,thanhdieu home,profile thanhdieu",
+        "favicon": "./res/v5/img/logo.jpg",
+        "namesite": "ADMIN | CONTROL PANEL",
+        "avatar": "./res/v5/img/avatar.gif",
+        "userName": [
+            "Hello Admin",
+            "Welcome to Admin Panel.",
+            "Control and configure your site 🚀"
+        ],
+        "trigger": "👉 Tìm hiểu tôi 😶&zwj;🌫️",
+        "bio1": "🤖️ Administrator",
+        "bio2": "🔍 High Security Mode",
+        "bio3": "💻 Control Panel active",
+        "bio4": "Monitoring traffic live 📊",
+        "bio5": "Custom CSS & Animations 🎨",
+        "bio6": "Optimized performance 🚀",
+        "SocialNetworks": {
+            "facebook": "https://facebook.com/wusthanhdieu",
+            "instagram": "https://www.instagram.com/vuongsondieu2k2",
+            "tiktok": "https://www.tiktok.com/",
+            "telegram": "https://t.me/thanhdieuchannel"
+        }
+    },
+    "lovedays": {
+        "avatar_male": "./res/v5/img/male.jpeg",
+        "name_male": "ThanhDieu",
+        "avatar_female": "./res/v5/img/female.jpeg",
+        "name_female": "Ngoc Tram",
+        "time_relashiption": "28/03/2024"
+    },
+    "music": [
+        {
+            "url": "https://files.catbox.moe/4bjjfg.mp3",
+            "avatar": "https://i.ibb.co/Pt4ZJJd/that-girl-1545280005.jpg",
+            "title": "That Girl",
+            "author": "Olly Murs"
+        },
+        {
+            "url": "https://files.catbox.moe/m8b4hr.mp3",
+            "avatar": "https://i.imgur.com/e28b0dD.png",
+            "title": "Thiên Lý Ơi",
+            "author": "Jack ( 5 Triệu )"
+        },
+        {
+            "url": "https://files.catbox.moe/yrpft2.mp3",
+            "avatar": "https://i.imgur.com/DAaTklq.png",
+            "title": "Thuỷ Triều",
+            "author": "Quang Hùng MasterD"
+        },
+        {
+            "url": "https://files.catbox.moe/jlat9a.mp3",
+            "avatar": "https://i.imgur.com/vp5Vsx5.png",
+            "title": "風立ちぬ ( Gió Nổi )",
+            "author": "周深"
+        },
+        {
+            "url": "https://files.catbox.moe/hkqk6x.mp3",
+            "avatar": "https://i.imgur.com/GEOKT8b.png",
+            "title": "Chúng Ta Của Tương Lai",
+            "author": "Sơn Tùng M-TP"
+        },
+        {
+            "url": "https://files.catbox.moe/acg0vl.mp3",
+            "avatar": "https://i.ibb.co/MDVY07s/619964de31327dbf8491d14d2c25533f.jpg",
+            "title": "Hoa Cỏ Lau",
+            "author": "Phong Max"
+        },
+        {
+            "url": "https://files.catbox.moe/s8opab.mp3",
+            "avatar": "https://i.ibb.co/6R8V7S7/ed0741228ad36870e13624120474e50a.jpg",
+            "title": "Sau Lời Từ Khước",
+            "author": "Phan Mạnh Quỳnh"
+        },
+        {
+            "url": "https://files.catbox.moe/gvqgma.mp3",
+            "avatar": "https://i.ibb.co/gvXHBqv/ab67616d0000b273ae85dfd27beee97a3a009f68.jpg",
+            "title": "Em Đã Xa Anh Remix",
+            "author": "Như Việt"
+        },
+        {
+            "url": "https://files.catbox.moe/dvjckq.mp3",
+            "avatar": "https://i.ibb.co/VpFyXhS/ab44498b5b432879428719390baf1180-1490064587.jpg",
+            "title": "Anh Đã Quen Với Cô Đơn",
+            "author": "Soobin Hoàng Sơn"
+        }
+    ]
+}</textarea>
                         </div>
                     </div>
                 </div>
@@ -1230,19 +1378,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                 <br />
                                 <div class="nk-opt-list">
                                     <ul class="music_menu_list">
-                                        <?php foreach ($ThanhDieuMusicList->songs as $song): ?>
-                                        <li url="<?= htmlspecialchars($song['url']) ?>">
+                                                                                <li url="https://files.catbox.moe/4bjjfg.mp3">
                                             <span class="name">
-                                                <img class="singer-avatar ls-is-cached" src="<?= htmlspecialchars($song['avatar']) ?>">
+                                                <img class="singer-avatar ls-is-cached" src="https://i.ibb.co/Pt4ZJJd/that-girl-1545280005.jpg">
                                                 <span class="title">
-                                                    <font style="vertical-align: inherit;"><?= htmlspecialchars($song['title']) ?></font>
+                                                    <font style="vertical-align: inherit;">That Girl</font>
                                                 </span>
                                             </span>
                                             <span class="author">
-                                                <font style="vertical-align: inherit;"><?= htmlspecialchars($song['author']) ?></font>
+                                                <font style="vertical-align: inherit;">Olly Murs</font>
                                             </span>
                                         </li>
-                                        <?php endforeach; ?>
+                                        <li url="https://files.catbox.moe/m8b4hr.mp3">
+                                            <span class="name">
+                                                <img class="singer-avatar ls-is-cached" src="https://i.imgur.com/e28b0dD.png">
+                                                <span class="title">
+                                                    <font style="vertical-align: inherit;">Thiên Lý Ơi</font>
+                                                </span>
+                                            </span>
+                                            <span class="author">
+                                                <font style="vertical-align: inherit;">Jack ( 5 Triệu )</font>
+                                            </span>
+                                        </li>
+                                        <li url="https://files.catbox.moe/yrpft2.mp3">
+                                            <span class="name">
+                                                <img class="singer-avatar ls-is-cached" src="https://i.imgur.com/DAaTklq.png">
+                                                <span class="title">
+                                                    <font style="vertical-align: inherit;">Thuỷ Triều</font>
+                                                </span>
+                                            </span>
+                                            <span class="author">
+                                                <font style="vertical-align: inherit;">Quang Hùng MasterD</font>
+                                            </span>
+                                        </li>
+                                        <li url="https://files.catbox.moe/jlat9a.mp3">
+                                            <span class="name">
+                                                <img class="singer-avatar ls-is-cached" src="https://i.imgur.com/vp5Vsx5.png">
+                                                <span class="title">
+                                                    <font style="vertical-align: inherit;">風立ちぬ ( Gió Nổi )</font>
+                                                </span>
+                                            </span>
+                                            <span class="author">
+                                                <font style="vertical-align: inherit;">周深</font>
+                                            </span>
+                                        </li>
+                                        <li url="https://files.catbox.moe/hkqk6x.mp3">
+                                            <span class="name">
+                                                <img class="singer-avatar ls-is-cached" src="https://i.imgur.com/GEOKT8b.png">
+                                                <span class="title">
+                                                    <font style="vertical-align: inherit;">Chúng Ta Của Tương Lai</font>
+                                                </span>
+                                            </span>
+                                            <span class="author">
+                                                <font style="vertical-align: inherit;">Sơn Tùng M-TP</font>
+                                            </span>
+                                        </li>
+                                        <li url="https://files.catbox.moe/acg0vl.mp3">
+                                            <span class="name">
+                                                <img class="singer-avatar ls-is-cached" src="https://i.ibb.co/MDVY07s/619964de31327dbf8491d14d2c25533f.jpg">
+                                                <span class="title">
+                                                    <font style="vertical-align: inherit;">Hoa Cỏ Lau</font>
+                                                </span>
+                                            </span>
+                                            <span class="author">
+                                                <font style="vertical-align: inherit;">Phong Max</font>
+                                            </span>
+                                        </li>
+                                        <li url="https://files.catbox.moe/s8opab.mp3">
+                                            <span class="name">
+                                                <img class="singer-avatar ls-is-cached" src="https://i.ibb.co/6R8V7S7/ed0741228ad36870e13624120474e50a.jpg">
+                                                <span class="title">
+                                                    <font style="vertical-align: inherit;">Sau Lời Từ Khước</font>
+                                                </span>
+                                            </span>
+                                            <span class="author">
+                                                <font style="vertical-align: inherit;">Phan Mạnh Quỳnh</font>
+                                            </span>
+                                        </li>
+                                        <li url="https://files.catbox.moe/gvqgma.mp3">
+                                            <span class="name">
+                                                <img class="singer-avatar ls-is-cached" src="https://i.ibb.co/gvXHBqv/ab67616d0000b273ae85dfd27beee97a3a009f68.jpg">
+                                                <span class="title">
+                                                    <font style="vertical-align: inherit;">Em Đã Xa Anh Remix</font>
+                                                </span>
+                                            </span>
+                                            <span class="author">
+                                                <font style="vertical-align: inherit;">Như Việt</font>
+                                            </span>
+                                        </li>
+                                        <li url="https://files.catbox.moe/dvjckq.mp3">
+                                            <span class="name">
+                                                <img class="singer-avatar ls-is-cached" src="https://i.ibb.co/VpFyXhS/ab44498b5b432879428719390baf1180-1490064587.jpg">
+                                                <span class="title">
+                                                    <font style="vertical-align: inherit;">Anh Đã Quen Với Cô Đơn</font>
+                                                </span>
+                                            </span>
+                                            <span class="author">
+                                                <font style="vertical-align: inherit;">Soobin Hoàng Sơn</font>
+                                            </span>
+                                        </li>
+
                                     </ul>
                                 </div>
                             </div>
@@ -1284,13 +1519,169 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     <script src="./res/v5/libs/jbox@1.3.3/jBox.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pace-js@latest/pace.min.js" data-pace-options='{"restartOnRequestAfter":false,"eventLag":false}'></script>
     <!--/ @Index Resource /-->
-    <script src="./res/v5/js/index.js?v=<?php echo rand(1,999)?>"></script>
+    <script src="./res/v5/js/index.js?v=304"></script>
     <!--/ @CDN /-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
     <script src="//cdn.thanhdieu.com/dialog/wstoast/ws.toast.js"></script>
 
     <!--/ AJAX and Dashboard Logic Script /-->
     <script>
+    // Global Config Object
+    var config = null;
+
+    function applyConfig(cfg) {
+        if (!cfg) return;
+        config = cfg;
+
+        // 1. Header & SEO
+        document.title = config.header.title;
+        $('meta[name="description"]').attr('content', config.header.description);
+        $('meta[name="keywords"]').attr('content', config.header.keywords);
+        $('meta[property="og:title"]').attr('content', config.header.title);
+        $('link[rel="shortcut icon"]').attr('href', config.header.favicon + '?v=' + Math.floor(Math.random()*1000));
+        $('.loading-img').attr('src', config.header.favicon + '?v=' + Math.floor(Math.random()*1000));
+        
+        // 2. Namesite & Brand
+        $('.dash-sidebar-header h3').text(config.header.namesite || "WS ADMIN");
+        $('.sidebar-profile h4').text(config.header.namesite);
+        $('.logo-web-title .web-title').text(config.header.namesite);
+        
+        // 3. Avatar
+        $('.avatar-img').attr('src', config.header.avatar + '?v=' + Math.floor(Math.random()*1000));
+        
+        // 4. Greetings (Typed.js handles initialization, so we set attribute before it initializes)
+        $('#userName').attr('data-username', JSON.stringify(config.header.userName));
+        $('#userName').data('username', config.header.userName);
+        
+        // 5. Bio Tags
+        $('.info-left .tag').eq(0).html(config.header.bio1);
+        $('.info-left .tag').eq(1).html(config.header.bio2);
+        $('.info-left .tag').eq(2).html(config.header.bio3);
+        $('.info-right .tag').eq(0).html(config.header.bio4);
+        $('.info-right .tag').eq(1).html(config.header.bio5);
+        $('.info-right .tag').eq(2).html(config.header.bio6);
+
+        // 6. Relationship Details
+        $('.img-male img:first-child').attr('src', config.lovedays.avatar_male);
+        $('.img-male span').html(config.lovedays.name_male);
+        $('.img-female img:first-child').attr('src', config.lovedays.avatar_female);
+        $('.img-female span').html(config.lovedays.name_female);
+        $('#anniversary-date-binder').attr('data-ngayyeu', config.lovedays.time_relashiption);
+
+        // 7. Songs Rendering
+        var tableBody = $('#tab-music tbody');
+        if (tableBody.length) {
+            tableBody.empty();
+            config.music.forEach(function(song, index) {
+                var row = `<tr>
+                    <td>${ index + 1 }</td>
+                    <td>
+                        <img src="${ song.avatar }" style="width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                    </td>
+                    <td style="font-weight: 700;">${ song.title }</td>
+                    <td>${ song.author }</td>
+                    <td>
+                        <span style="font-size: 0.82rem; opacity: 0.6; word-break: break-all;">${ song.url }</span>
+                    </td>
+                    <td style="text-align: right;">
+                        <div style="display:inline-flex; gap: 8px;">
+                            <button class="dash-btn-danger delete-song-btn" data-index="${ index }">
+                                <i class="ri-delete-bin-fill"></i> Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+                tableBody.append(row);
+            });
+        }
+
+        var menuList = $('.music_menu_list');
+        if (menuList.length) {
+            menuList.empty();
+            config.music.forEach(function(song) {
+                var item = `<li url="${ song.url }">
+                    <span class="name">
+                        <img class="singer-avatar ls-is-cached" src="${ song.avatar }">
+                        <span class="title">
+                            <font style="vertical-align: inherit;">${ song.title }</font>
+                        </span>
+                    </span>
+                    <span class="author">
+                        <font style="vertical-align: inherit;">${ song.author }</font>
+                    </span>
+                </li>`;
+                menuList.append(item);
+            });
+        }
+
+        // 8. Badges & Counts
+        $('.dash-stat-card:has(.dash-stat-label:contains("Active Songs")) .dash-stat-value').text(config.music.length + ' Tracks');
+        $('#tab-music .dash-card-title:contains("Loaded Audio Tracks")').html('<i class="ri-music-2-line"></i> Loaded Audio Tracks (' + config.music.length + ' total)');
+
+        // 9. Input field values
+        $('input[name="title"]').val(config.header.title);
+        $('input[name="namesite"]').val(config.header.namesite);
+        $('input[name="favicon"]').val(config.header.favicon);
+        $('input[name="avatar"]').val(config.header.avatar);
+        $('input[name="description"]').val(config.header.description);
+        $('input[name="keywords"]').val(config.header.keywords);
+
+        $('input[name="bio1"]').val(config.header.bio1);
+        $('input[name="bio2"]').val(config.header.bio2);
+        $('input[name="bio3"]').val(config.header.bio3);
+        $('input[name="bio4"]').val(config.header.bio4);
+        $('input[name="bio5"]').val(config.header.bio5);
+        $('input[name="bio6"]').val(config.header.bio6);
+
+        $('textarea[name="usernames"]').val((config.header.userName || []).join('
+'));
+
+        $('input[name="social_facebook"]').val(config.header.SocialNetworks.facebook || '');
+        $('input[name="social_instagram"]').val(config.header.SocialNetworks.instagram || '');
+        $('input[name="social_tiktok"]').val(config.header.SocialNetworks.tiktok || '');
+        $('input[name="social_telegram"]').val(config.header.SocialNetworks.telegram || '');
+
+        $('input[name="time_relashiption"]').val(config.lovedays.time_relashiption);
+        $('input[name="name_male"]').val(config.lovedays.name_male);
+        $('input[name="avatar_male"]').val(config.lovedays.avatar_male);
+        $('input[name="name_female"]').val(config.lovedays.name_female);
+        $('input[name="avatar_female"]').val(config.lovedays.avatar_female);
+
+        // Developer Area Textarea
+        $('#tab-developer textarea').val(JSON.stringify(config, null, 4));
+    }
+
+    // Immediately load config before everything else executes
+    var localData = localStorage.getItem('config_data');
+    if (localData) {
+        try {
+            config = JSON.parse(localData);
+            applyConfig(config);
+        } catch(e) {
+            console.error("Error parsing local config data:", e);
+        }
+    }
+
+    // Try fetching config.json asynchronously to merge or initialize
+    $.ajax({
+        url: './res/config/config.json',
+        dataType: 'json',
+        cache: false,
+        success: function(data) {
+            if (!localData) {
+                config = data;
+                localStorage.setItem('config_data', JSON.stringify(config));
+                applyConfig(config);
+                if (window.updateAnniversaryDisplay) {
+                    window.updateAnniversaryDisplay();
+                }
+            }
+        },
+        error: function(err) {
+            console.warn("Could not load config.json dynamically, relying on pre-rendered or localStorage configuration.");
+        }
+    });
+
     $(document).ready(function() {
         // Tab switching logic
         $('.dash-nav-item').on('click', function() {
@@ -1319,7 +1710,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         });
 
         // Calculate and cache anniversary active days
-        function updateAnniversaryDisplay() {
+        window.updateAnniversaryDisplay = function() {
             var dateStr = $('#anniversary-date-binder').attr('data-ngayyeu');
             if (dateStr) {
                 var parts = dateStr.split(/[\/\-:]/);
@@ -1335,14 +1726,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 }
             }
         }
-        updateAnniversaryDisplay();
-        setInterval(updateAnniversaryDisplay, 10000);
+        setInterval(window.updateAnniversaryDisplay, 10000);
+        window.updateAnniversaryDisplay();
 
-        // AJAX: Save General Settings
+        // Save General Settings
         $('#form-general').on('submit', function(e) {
             e.preventDefault();
-            var formData = $(this).serialize() + '&action=save_general';
             Wstoast.loading('Saving general settings...');
+            
+            var formData = $(this).serialize() + '&action=save_general';
+            
             $.ajax({
                 url: 'index.php',
                 type: 'POST',
@@ -1350,35 +1743,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 dataType: 'json',
                 success: function(response) {
                     Wstoast.closeAll();
-                    if (response.status === 'success') {
-                        Wstoast.success(response.message);
+                    if (response && response.status === 'success') {
+                        // PHP backend successfully saved to disk!
+                        // Remove localStorage override so we load directly from the updated config.json
+                        localStorage.removeItem('config_data');
+                        Wstoast.success(response.message || 'General configurations successfully updated on disk!');
                         setTimeout(function() {
                             location.reload();
                         }, 1000);
                     } else {
-                        Wstoast.error(response.message);
+                        saveGeneralLocally();
                     }
                 },
-                error: function(xhr, status, error) {
-                    Wstoast.closeAll();
-                    var msg = 'Failed to communicate with server.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        msg += ' ' + xhr.responseJSON.message;
-                    } else if (xhr.responseText) {
-                        msg += ' Error: ' + xhr.responseText;
-                    } else if (error) {
-                        msg += ' (' + error + ')';
-                    }
-                    Wstoast.error(msg);
+                error: function() {
+                    // Fallback to localStorage if PHP is not available (e.g. GitHub Pages)
+                    saveGeneralLocally();
                 }
             });
+
+            function saveGeneralLocally() {
+                if (!config) config = {};
+                if (!config.header) config.header = {};
+                if (!config.header.SocialNetworks) config.header.SocialNetworks = {};
+
+                config.header.title = $('input[name="title"]').val();
+                config.header.namesite = $('input[name="namesite"]').val();
+                config.header.favicon = $('input[name="favicon"]').val();
+                config.header.avatar = $('input[name="avatar"]').val();
+                config.header.description = $('input[name="description"]').val();
+                config.header.keywords = $('input[name="keywords"]').val();
+
+                config.header.bio1 = $('input[name="bio1"]').val();
+                config.header.bio2 = $('input[name="bio2"]').val();
+                config.header.bio3 = $('input[name="bio3"]').val();
+                config.header.bio4 = $('input[name="bio4"]').val();
+                config.header.bio5 = $('input[name="bio5"]').val();
+                config.header.bio6 = $('input[name="bio6"]').val();
+
+                var usernamesArray = $('textarea[name="usernames"]').val().split('
+').map(s => s.trim()).filter(Boolean);
+                config.header.userName = usernamesArray;
+
+                config.header.SocialNetworks.facebook = $('input[name="social_facebook"]').val();
+                config.header.SocialNetworks.instagram = $('input[name="social_instagram"]').val();
+                config.header.SocialNetworks.tiktok = $('input[name="social_tiktok"]').val();
+                config.header.SocialNetworks.telegram = $('input[name="social_telegram"]').val();
+
+                localStorage.setItem('config_data', JSON.stringify(config));
+                
+                Wstoast.closeAll();
+                Wstoast.success('General configurations successfully updated (locally)!');
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            }
         });
 
-        // AJAX: Save Relationship Info
+        // Save Relationship configurations
         $('#form-relationship').on('submit', function(e) {
             e.preventDefault();
-            var formData = $(this).serialize() + '&action=save_relationship';
             Wstoast.loading('Saving anniversary configurations...');
+            
+            var formData = $(this).serialize() + '&action=save_relationship';
+            
             $.ajax({
                 url: 'index.php',
                 type: 'POST',
@@ -1386,35 +1813,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 dataType: 'json',
                 success: function(response) {
                     Wstoast.closeAll();
-                    if (response.status === 'success') {
-                        Wstoast.success(response.message);
+                    if (response && response.status === 'success') {
+                        localStorage.removeItem('config_data');
+                        Wstoast.success(response.message || 'Relationship configurations updated on disk!');
                         setTimeout(function() {
                             location.reload();
                         }, 1000);
                     } else {
-                        Wstoast.error(response.message);
+                        saveRelationshipLocally();
                     }
                 },
-                error: function(xhr, status, error) {
-                    Wstoast.closeAll();
-                    var msg = 'Failed to update couple configurations.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        msg += ' ' + xhr.responseJSON.message;
-                    } else if (xhr.responseText) {
-                        msg += ' Error: ' + xhr.responseText;
-                    } else if (error) {
-                        msg += ' (' + error + ')';
-                    }
-                    Wstoast.error(msg);
+                error: function() {
+                    saveRelationshipLocally();
                 }
             });
+
+            function saveRelationshipLocally() {
+                if (!config) config = {};
+                if (!config.lovedays) config.lovedays = {};
+
+                config.lovedays.time_relashiption = $('input[name="time_relashiption"]').val();
+                config.lovedays.name_male = $('input[name="name_male"]').val();
+                config.lovedays.avatar_male = $('input[name="avatar_male"]').val();
+                config.lovedays.name_female = $('input[name="name_female"]').val();
+                config.lovedays.avatar_female = $('input[name="avatar_female"]').val();
+
+                localStorage.setItem('config_data', JSON.stringify(config));
+                
+                Wstoast.closeAll();
+                Wstoast.success('Relationship configurations updated (locally)!');
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            }
         });
 
-        // AJAX: Add Song
+        // Add Song
         $('#form-add-song').on('submit', function(e) {
             e.preventDefault();
-            var formData = $(this).serialize() + '&action=add_song';
             Wstoast.loading('Adding track to playlist...');
+            
+            var formData = $(this).serialize() + '&action=add_song';
+            
             $.ajax({
                 url: 'index.php',
                 type: 'POST',
@@ -1422,36 +1862,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 dataType: 'json',
                 success: function(response) {
                     Wstoast.closeAll();
-                    if (response.status === 'success') {
-                        Wstoast.success(response.message);
+                    if (response && response.status === 'success') {
+                        localStorage.removeItem('config_data');
+                        Wstoast.success(response.message || 'New song added successfully to disk!');
                         setTimeout(function() {
                             location.reload();
                         }, 1000);
                     } else {
-                        Wstoast.error(response.message);
+                        addSongLocally();
                     }
                 },
-                error: function(xhr, status, error) {
-                    Wstoast.closeAll();
-                    var msg = 'Failed to add track.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        msg += ' ' + xhr.responseJSON.message;
-                    } else if (xhr.responseText) {
-                        msg += ' Error: ' + xhr.responseText;
-                    } else if (error) {
-                        msg += ' (' + error + ')';
-                    }
-                    Wstoast.error(msg);
+                error: function() {
+                    addSongLocally();
                 }
             });
+
+            function addSongLocally() {
+                if (!config) config = {};
+                if (!config.music) config.music = [];
+
+                var newSong = {
+                    title: $('input[name="song_title"]').val() || "Unknown",
+                    author: $('input[name="song_author"]').val() || "Unknown Artist",
+                    url: $('input[name="song_url"]').val() || "",
+                    avatar: $('input[name="song_avatar"]').val() || "https://i.imgur.com/e28b0dD.png"
+                };
+
+                if (newSong.url) {
+                    config.music.push(newSong);
+                    localStorage.setItem('config_data', JSON.stringify(config));
+                    Wstoast.closeAll();
+                    Wstoast.success('New song added successfully (locally)!');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    Wstoast.closeAll();
+                    Wstoast.error('Song MP3 URL cannot be empty!');
+                }
+            }
         });
 
-        // AJAX: Delete Song
-        $('.delete-song-btn').on('click', function() {
-            var index = $(this).data('index');
+        // Delete Song
+        $(document).on('click', '.delete-song-btn', function() {
+            var index = parseInt($(this).attr('data-index') || $(this).data('index'), 10);
             var row = $(this).closest('tr');
             if (confirm('Are you sure you want to permanently delete this track?')) {
                 Wstoast.loading('Deleting track...');
+                
                 $.ajax({
                     url: 'index.php',
                     type: 'POST',
@@ -1462,28 +1920,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     dataType: 'json',
                     success: function(response) {
                         Wstoast.closeAll();
-                        if (response.status === 'success') {
-                            Wstoast.success(response.message);
+                        if (response && response.status === 'success') {
+                            localStorage.removeItem('config_data');
+                            Wstoast.success(response.message || 'Song deleted successfully from disk!');
                             row.fadeOut(500, function() {
                                 location.reload();
                             });
                         } else {
-                            Wstoast.error(response.message);
+                            deleteSongLocally();
                         }
                     },
-                    error: function(xhr, status, error) {
-                        Wstoast.closeAll();
-                        var msg = 'Failed to delete track from backend storage.';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            msg += ' ' + xhr.responseJSON.message;
-                        } else if (xhr.responseText) {
-                            msg += ' Error: ' + xhr.responseText;
-                        } else if (error) {
-                            msg += ' (' + error + ')';
-                        }
-                        Wstoast.error(msg);
+                    error: function() {
+                        deleteSongLocally();
                     }
                 });
+
+                function deleteSongLocally() {
+                    if (config && config.music && index >= 0 && index < config.music.length) {
+                        config.music.splice(index, 1);
+                        localStorage.setItem('config_data', JSON.stringify(config));
+                        Wstoast.closeAll();
+                        Wstoast.success('Song deleted successfully (locally)!');
+                        row.fadeOut(500, function() {
+                            location.reload();
+                        });
+                    } else {
+                        Wstoast.closeAll();
+                        Wstoast.error('Invalid song index!');
+                    }
+                }
+            }
+        });
+
+        // Reset Config Button logic
+        $('#btn-reset-config').on('click', function() {
+            if (confirm('Are you sure you want to reset all configurations to the repository config.json defaults?')) {
+                Wstoast.loading('Resetting configuration...');
+                localStorage.removeItem('config_data');
+                Wstoast.closeAll();
+                Wstoast.success('Configuration reset successfully!');
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
             }
         });
 
@@ -1498,6 +1976,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $('#ping-load').text(randomPing + 'ms');
         }, 4000);
     });
-    </script>
+</script>
 </body>
 </html>
