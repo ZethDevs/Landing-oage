@@ -668,6 +668,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     <i class="ri-settings-4-fill"></i>
                     <span>Config Website</span>
                 </li>
+                <li class="dash-nav-item" onclick="window.open('res/config/config.html','_blank')">
+                    <i class="ri-file-settings-fill"></i>
+                    <span>Config</span>
+                </li>
                 <li class="dash-nav-item" data-tab="relationship">
                     <i class="ri-heart-pulse-fill"></i>
                     <span>Anniversary Panel</span>
